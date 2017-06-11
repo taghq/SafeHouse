@@ -4,18 +4,30 @@ import json
 
 from v1.apps import app, db, socketio
 from v1.apps.users.models import User
+from v1.apps.safehouse.guests.models import Guest, Trait
+from v1.apps.safehouse.hosts.models import Host, Preference, Suspend
 
 from v1.apps.config import DATABASE_TEST
 
 from flask_socketio import SocketIO, SocketIOTestClient
 
+from datetime import date
+
 class TestingBase(unittest.TestCase):
     def initDB(self):
-        for i in range(15):
+        for i in range(20):
             user = User(username="TestUser" + str(i))
             user.hash_password("password")
             if i == 0:
                 user.admin = True
+            if i <= 10: #Create Guest
+                guest = Guest(user=user)
+                trait = Trait(guest=guest, language="English", disabled=True, smoker=True, has_pets=False)
+            else:
+                host = Host(user=user)
+                preference = Preference(host=host, language="Spanish")
+                suspend = Suspend(from_date=date(2017,6,1), to_date=date(2017,6,14))
+                host.suspended_dates.append(suspend)
             self.db.session.add(user)
         self.db.session.commit()
 
@@ -39,7 +51,7 @@ class TestingBase(unittest.TestCase):
         self.db.drop_all()
 
 
-class PartyCrawlTesting(TestingBase):
+class SafeHouseTesting(TestingBase):
 
     def doStuff():
         return True
