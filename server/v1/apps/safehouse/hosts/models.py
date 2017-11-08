@@ -1,4 +1,5 @@
 from v1.apps import db
+from v1.apps.safehouse.models import Trait
 
 import datetime
 
@@ -6,7 +7,8 @@ class Host(db.Model):
     __tablename__ = 'host'
     id = db.Column(db.Integer, primary_key=True)
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'))
-    preference = db.relationship("Preference", uselist=False, backref="host")
+    traits = db.relationship("Trait", uselist=False, backref="host_traits")
+    requirements = db.relationship("Trait", uselist=False, backref="host_requirements")
 
     def is_available(self, date):
         if type(date) is not datetime.date:
@@ -25,17 +27,6 @@ class Location(db.Model):
     state = db.Column(db.String(32))
     host_id = db.Column(db.Integer, db.ForeignKey('host.id'))
     host = db.relationship('Host', backref=db.backref('location', lazy='dynamic'))
-
-class Preference(db.Model):
-    __tablename__ = 'preference'
-    id = db.Column(db.Integer, primary_key=True)
-    language = db.Column(db.String(32))
-    wheelchair_access=db.Column(db.Boolean, default=False)
-    smoking_allowed=db.Column(db.Boolean, default=False)
-    pets_allowed=db.Column(db.Boolean, default=False)
-    has_pets=db.Column(db.Boolean, default=False)
-    overnight_stays_allowed=db.Column(db.Boolean, default=False)
-    host_id = db.Column(db.Integer, db.ForeignKey('host.id'))
 
 class Suspend(db.Model):
     __tablename__ = 'suspend'

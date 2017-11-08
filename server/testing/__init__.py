@@ -4,8 +4,9 @@ import json
 
 from v1.apps import app, db, socketio
 from v1.apps.users.models import User
-from v1.apps.safehouse.guests.models import Guest, Trait
-from v1.apps.safehouse.hosts.models import Host, Preference, Suspend
+from v1.apps.safehouse.guests.models import Guest
+from v1.apps.safehouse.hosts.models import Host, Suspend
+from v1.apps.safehouse.models import Trait
 
 from v1.apps.config import DATABASE_TEST
 
@@ -21,13 +22,9 @@ class TestingBase(unittest.TestCase):
             if i == 0:
                 user.admin = True
             if i <= 10: #Create Guest
-                guest = Guest(user=user)
-                trait = Trait(guest=guest, language="English", disabled=True, smoker=True, has_pets=False)
+                guest = Guest(user=user, traits=Trait(), requirements=Trait())
             else:
-                host = Host(user=user)
-                preference = Preference(host=host, language="Spanish")
-                suspend = Suspend(from_date=date(2017,6,1), to_date=date(2017,6,14))
-                host.suspended_dates.append(suspend)
+                host = Host(user=user, traits=Trait(), requirements=Trait())
             self.db.session.add(user)
         self.db.session.commit()
 
@@ -52,6 +49,14 @@ class TestingBase(unittest.TestCase):
 
 
 class SafeHouseTesting(TestingBase):
+    base_url = '/api/v1'
 
-    def doStuff():
-        return True
+    def login(self, username, password):
+        payload = {'username':username, 'password': password}
+        url = self.base_url + '/users/login'
+        return self.app.post(url, data=json.dumps(payload), content_type='application/json', follow_redirects=True)
+
+    def register(self, username, password):
+        payload = {'username':username, 'password': password}
+        url = self.base_url + '/users/register'
+        return self.app.post(self.base_url + '/register', data=json.dumps(payload), content_type='application/json', follow_redirects=True)

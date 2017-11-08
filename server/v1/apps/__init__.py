@@ -22,6 +22,7 @@ async_mode = None
 socketio = SocketIO(app, async_mode=async_mode)
 
 from .users import users
+from .safehouse import safehouse
 from .safehouse.guests import safehouse_guests
 from .safehouse.hosts import safehouse_hosts
 

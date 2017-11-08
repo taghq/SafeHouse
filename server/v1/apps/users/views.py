@@ -5,8 +5,7 @@ import string
 
 from . import users
 
-from .models import User
-from ..database import *
+from .models import User, authenticate
 
 from v1.apps import socketio, db
 from v1.apps.parsers import parse_user
@@ -25,6 +24,8 @@ def login(data):
     try:
         username = data['username']
         password = data['password']
+        fakestuff = data['fake']
+        print(fakestuff)
     except (AttributeError, KeyError):
         emit_error("Bad Request")
     user = authenticate(username, password)
@@ -35,7 +36,21 @@ def login(data):
     else:
         emit_error("Incorrect Username/Password")
 
-@users.route('', methods=['POST'])
+@users.route('/login', methods=['POST'])
+def login():
+    try:
+        data = request.get_json()
+        username = data['username']
+        password = data['password']
+    except (AttributeError, KeyError):
+        abort(401)
+    user = authenticate(username, password)
+    if user is not None:
+        return jsonify({ 'username': user.username })
+    else:
+        abort(400)
+
+@users.route('/register', methods=['POST'])
 def register_user():
     try:
         data = request.get_json()

@@ -1,9 +1,6 @@
 from v1.apps import db
 from passlib.apps import custom_app_context as pwd_context
 
-from v1.apps.safehouse.hosts.models import Host
-from v1.apps.safehouse.guests.models import Guest
-
 class User(db.Model):
     __tablename__ = 'user'
     id = db.Column(db.Integer, primary_key= True)
@@ -22,3 +19,17 @@ class User(db.Model):
 
     def verify_password(self, password):
         return pwd_context.verify(password, self.password_hash)
+
+def authenticate(username, password):
+    user = User.query.filter_by(username = username).first()
+    if user and user.verify_password(password):
+        return user
+
+def user_auth(request):
+    try:
+        data = request.get_json()
+        username = data['username']
+        password = data['password']
+    except (AttributeError, KeyError):
+        abort(401)
+    return authenticate(username, password)
